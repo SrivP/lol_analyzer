@@ -1,10 +1,12 @@
 from logging.config import fileConfig
 from dotenv import load_dotenv, find_dotenv # pyright: ignore[reportMissingImports]
 import os
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config #type:ignore
+from sqlalchemy import pool # type:ignore
+from app.models import base, players, match, match_participant, timeline_frame
+from app.models.base import Base
 
-from alembic import context
+from alembic import context # type:ignore
 
 # loading .env
 load_dotenv(find_dotenv())
@@ -22,7 +24,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -70,7 +72,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=None
+            connection=connection, target_metadata=target_metadata
         )
 
         with context.begin_transaction():
