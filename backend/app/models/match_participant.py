@@ -2,14 +2,17 @@
 
 from app.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column # type: ignore
-from sqlalchemy import ForeignKey # type: ignore
+from sqlalchemy import ForeignKey, UniqueConstraint # type: ignore
 
 class MatchParticipant(Base):
     __tablename__ = "match_participants"
+    __table_args__ = (
+        UniqueConstraint('match_id', 'participant_id'),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     match_id: Mapped[str] = mapped_column(ForeignKey("matches.match_id"))
-    puuid: Mapped[str] = mapped_column(ForeignKey("players.puuid"))
+    puuid: Mapped[str]
     participant_id: Mapped[int]  # 1-10, links to timeline frames
     champion_id: Mapped[int]
     champion_name: Mapped[str]

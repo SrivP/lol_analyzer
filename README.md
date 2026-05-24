@@ -81,3 +81,6 @@ timestamp_min INTEGER NOT NULL, -- 1, 2, 3... (minute mark)
     UNIQUE(match_id, participant_id, timestamp_min)
 
 );
+
+> [!NOTE]
+> I've labelled my uses of AI at the top of files that were one shot with AI. This is a project that I've tried my best to complete without the help of it as a means of testing my own abilities. However I personally believe it is unreasonable to build modern software completely without AI.

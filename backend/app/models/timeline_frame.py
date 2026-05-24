@@ -2,10 +2,13 @@
 
 from app.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column # type: ignore
-from sqlalchemy import ForeignKey # type: ignore
+from sqlalchemy import ForeignKey, UniqueConstraint # type: ignore
 
 class TimelineFrame(Base):
     __tablename__ = "timeline_frames"
+    __table_args__ = (
+        UniqueConstraint('match_id', 'participant_id', 'timestamp_min'),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     match_id: Mapped[str] = mapped_column(ForeignKey("matches.match_id"))

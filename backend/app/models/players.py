@@ -1,3 +1,5 @@
+# dropped because I realized AI halucinated a pointless schema/model that didn't add anything of value
+
 from app.models.base import Base
 from sqlalchemy import String, func # type: ignore
 from sqlalchemy.orm import Mapped, mapped_column # type: ignore
