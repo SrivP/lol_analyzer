@@ -4,10 +4,27 @@ from app.db.base import get_db
 from app.services.ingestion import ingest_match
 from app.services.bulk_ingestion import bulk_ingest
 from app.services.analysis import get_cs_analysis, get_vision_analysis
+import redis #type:ignore
+import os
+import json
+from fastapi.middleware.cors import CORSMiddleware #type:ignore
 
 app = FastAPI()
+redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 puuid = get_puuid("vulcan", "ak47")
 
+
+origins =[
+
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
@@ -16,15 +33,6 @@ def read_root():
 @app.get("/matches")
 def matches():
     return get_match_history(puuid=puuid)
-
-# @app.get('/match/{match_id}')
-# def match_data(match_id: str):
-#     return get_match_data(match_id=match_id)
-
-
-# @app.get('/match/{match_id}/timeline')
-# def match_timeline_data(match_id: str):
-#     return get_match_timeline_data(match_id=match_id)
 
 @app.post('/ingest/player/{game_name}/{tag_name}')
 def ingest_last_10_matches(game_name: str, tag_name : str):
@@ -41,9 +49,30 @@ def ingest_data(match_id : str, db = Depends(get_db)):
 
 @app.get('/analysis/cs/{puuid}')
 def cs_analysis_endpoint(puuid : str, db = Depends(get_db)):
-    return get_cs_analysis(puuid=puuid, db = db)
+    cache_key = f"cs_analysis:{puuid}"
+    cached_data = redis_client.get(cache_key)
+    if cached_data:
+        print("Cache hit, returning data")
+        return json.loads(cached_data)
+    
+    print("Cache not present, running query")
+    cs_analysis_result = get_cs_analysis(puuid=puuid, db = db)
+    # ex=3600 tells the cache to delete the data after 1 hour, so we get fresh data every hour
+    redis_client.set(cache_key, json.dumps(cs_analysis_result), ex=3600) 
+    return cs_analysis_result
 
 
 @app.get('/analysis/vision/{puuid}')
 def vision_analysis_endpoint(puuid : str, db = Depends(get_db)):
-    return get_vision_analysis(puuid=puuid, db = db)
+    # if i ended up having a match id and a puuid as a parameter, I would go in order of least to most specific
+    # so something like vision_analysis:{match_id}:{puuid}
+    cache_key = f"vision_analysis:{puuid}"
+    cached_data = redis_client.get(cache_key)
+    if cached_data:
+        print("Cache hit, returning data")
+        return json.loads(cached_data)
+    print("Cache not present, running query")
+    vision_analysis_result = get_vision_analysis(puuid=puuid, db = db)
+    redis_client.set(cache_key, json.dumps(vision_analysis_result), ex=3600)
+
+    
