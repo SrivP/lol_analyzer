@@ -3,7 +3,7 @@ from app.services.riot_client import get_match_history, get_puuid, get_match_dat
 from app.db.base import get_db 
 from app.services.ingestion import ingest_match
 from app.services.bulk_ingestion import bulk_ingest
-from app.services.analysis import get_cs_analysis
+from app.services.analysis import get_cs_analysis, get_vision_analysis
 
 app = FastAPI()
 puuid = get_puuid("vulcan", "ak47")
@@ -42,3 +42,8 @@ def ingest_data(match_id : str, db = Depends(get_db)):
 @app.get('/analysis/cs/{puuid}')
 def cs_analysis_endpoint(puuid : str, db = Depends(get_db)):
     return get_cs_analysis(puuid=puuid, db = db)
+
+
+@app.get('/analysis/vision/{puuid}')
+def vision_analysis_endpoint(puuid : str, db = Depends(get_db)):
+    return get_vision_analysis(puuid=puuid, db = db)

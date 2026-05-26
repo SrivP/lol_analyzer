@@ -82,5 +82,9 @@ timestamp_min INTEGER NOT NULL, -- 1, 2, 3... (minute mark)
 
 );
 
+### Notes
+
+CS = Creep Score = Number of minions last hit during the game. Killing creeps gives gold, which means you can purchase better weapons faster. Therefore, higher creep score is better for the team. CS/M = Creep score / minute, that is how many creeps you can kill per minute. Benchmark of 85 is set.
+
 > [!NOTE]
-> I've labelled my uses of AI at the top of files that were one shot with AI. This is a project that I've tried my best to complete without the help of it as a means of testing my own abilities. However I personally believe it is unreasonable to build modern software completely without AI.
+> I've labelled my uses of AI at the top of files that were one shot with AI. I tried to only use it for debugging and planning out parts, but usually never to completely write the code for me. I personally believe it is unreasonable to build modern software completely without AI.
