@@ -1,6 +1,5 @@
 import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import type { QueryFunctionContext } from "@tanstack/react-query";
 
 type MatchRow = {
   win?: boolean;
@@ -480,25 +479,6 @@ function Dashboard() {
                   </div>
                 );
               })}
-            </div>
-
-            <div className="profile-panel">
-              <div className="profile-row">
-                <span>Summoner</span>
-                <strong>{data?.summonerName ?? profileName}</strong>
-              </div>
-              <div className="profile-row">
-                <span>Tag</span>
-                <strong>{data?.summonerTag ?? profileTag}</strong>
-              </div>
-              <div className="profile-row">
-                <span>Region</span>
-                <strong>{data?.region ?? "NA"}</strong>
-              </div>
-              <div className="profile-row">
-                <span>Queue</span>
-                <strong>{data?.queueType ?? "Ranked Solo"}</strong>
-              </div>
             </div>
           </aside>
         </div>
