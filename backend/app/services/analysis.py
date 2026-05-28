@@ -56,8 +56,17 @@ def get_gold_diff_analysis(puuid : str, match_id : str, db : Session):
         
         if e_frame:
             timeline_data.append({"timestamp_min": minute, "player_gold": p_frame.current_gold, "enemy_gold": e_frame.current_gold, "gold_diff": p_frame.total_gold - e_frame.total_gold})
-
-    return {"match_id": match_id, "position": player.team_position, "timeline": timeline_data}        
+    key_minutes = {5, 10, 15}
+    laning_phase = {
+        entry["timestamp_min"]: entry["gold_diff"]
+        for entry in timeline_data
+        if entry["timestamp_min"] in key_minutes
+    }
+    return {"match_id": match_id, "position": player.team_position, "laning_phase": {
+        "5m": laning_phase.get(5),
+        "10m": laning_phase.get(10),
+        "15m": laning_phase.get(15),
+    }, "timeline": timeline_data}        
 
 def get_kda_analysis(puuid : str, db : Session):
     select_player_row = db.query(MatchParticipant).filter(MatchParticipant.puuid == puuid).all()
@@ -70,6 +79,7 @@ def get_kda_analysis(puuid : str, db : Session):
     lifetime_kills = sum(row["kills"] for row in player_stats) 
     lifetime_deaths = sum(row["deaths"] for row in player_stats) 
     lifetime_assists = sum(row["assists"] for row in player_stats)
+    avg_win_rate = sum(row["win"] for row in player_stats) / len(player_stats) if len(player_stats) > 0 else 0
     
     avg_kda = (lifetime_kills + lifetime_assists) / lifetime_deaths if lifetime_deaths != 0 else "Perfect"
     
@@ -79,7 +89,8 @@ def get_kda_analysis(puuid : str, db : Session):
         "lifetime_kills": lifetime_kills,
         "lifetime_deaths": lifetime_deaths,
         "lifetime_assists": lifetime_assists,
-        "avg_kda": avg_kda
+        "avg_kda": avg_kda,
+        "avg_win_rate": avg_win_rate
 
     }
     return {"matches" : player_stats, "summary": summary}

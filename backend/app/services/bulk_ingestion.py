@@ -5,9 +5,8 @@ from app.db.base import get_db
 
 
 
-def bulk_ingest(game_name : str, tag_name : str):
+def bulk_ingest(puuid : str):
     db = next(get_db())
-    puuid = get_puuid(game_name=game_name, tag_name=tag_name)
     matches = get_match_history(puuid=puuid)
     for match in matches:
         ingest_match(match_id=match, db = db)

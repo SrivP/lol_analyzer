@@ -1,8 +1,12 @@
 {
-  /* generated using AI because I suck at UI design, navigation logic done by me tho!  😭 */
+  /* This page was generated using AI, althought edits and tweaks were made by me, mostly on the routing logic */
 }
-import { NavLink } from "react-router";
+
 import { Modal } from "@heroui/react";
+import { Button } from "@heroui/react";
+import { Swords } from "lucide-react";
+import { Form } from "react-router-dom";
+import { useActionData } from "react-router";
 
 const telemetryRows = [
   ["LANE", "MID", "PRESSURE", "+18.4"],
@@ -12,6 +16,7 @@ const telemetryRows = [
 ];
 
 function Hero() {
+  const actionData = useActionData();
   return (
     <main className="app-shell">
       <section className="hero-grid" aria-labelledby="hero-title">
@@ -40,10 +45,94 @@ function Hero() {
 
           <div className="command-row" aria-label="Primary actions">
             <Modal>
-              <div className="primary-cta">
-                <button>START ANALYSIS</button>
+              <Button className="primary-cta hero-modal-trigger">
+                <span>START ANALYSIS</span>
                 <kbd>ENTER</kbd>
-              </div>
+              </Button>
+
+              <Modal.Backdrop className="analysis-modal-backdrop">
+                <Modal.Container className="analysis-modal-container">
+                  <Modal.Dialog className="analysis-modal-dialog">
+                    <Modal.CloseTrigger className="analysis-modal-close">
+                      CLOSE
+                    </Modal.CloseTrigger>
+
+                    <Modal.Header className="analysis-modal-header">
+                      <Modal.Icon className="analysis-modal-icon">
+                        <Swords className="size-5" />
+                      </Modal.Icon>
+                      <div>
+                        <samp>[ ACCESS NODE / RIOT API ]</samp>
+                        <Modal.Heading className="analysis-modal-title">
+                          Connect Riot Account
+                        </Modal.Heading>
+                      </div>
+                    </Modal.Header>
+
+                    <Form method="post">
+                      <Modal.Body className="analysis-modal-body">
+                        <p>
+                          Enter the player credentials to pull live match data
+                          and historical performance metrics.
+                        </p>
+
+                        <div className="analysis-form-grid">
+                          <label className="analysis-field">
+                            <span>Summoner Name</span>
+                            <input
+                              name="gameName"
+                              placeholder="PLAYER NAME"
+                              required
+                            />
+                          </label>
+                          <label className="analysis-field analysis-field-tag">
+                            <span>Tag</span>
+                            <input name="tagLine" placeholder="NA1" required />
+                          </label>
+                        </div>
+
+                        <dl className="analysis-modal-meta">
+                          <div>
+                            <dt>REGION</dt>
+                            <dd>AUTO</dd>
+                          </div>
+                          <div>
+                            <dt>SCAN</dt>
+                            <dd>MATCH HISTORY</dd>
+                          </div>
+                          <div>
+                            <dt>MODE</dt>
+                            <dd>RANKED</dd>
+                          </div>
+                        </dl>
+                      </Modal.Body>
+
+                      <Modal.Footer className="analysis-modal-footer">
+                        <Button
+                          className="analysis-modal-button analysis-modal-button-secondary"
+                          variant="secondary"
+                          slot="close"
+                        >
+                          Cancel
+                        </Button>
+                        {actionData?.error && (
+                          <p className="text-red-500 text-sm font-semibold">
+                            {actionData.error}
+                          </p>
+                        )}
+                        <Button
+                          className="analysis-modal-button analysis-modal-button-primary"
+                          variant="primary"
+                          type="submit"
+                          slot="close"
+                        >
+                          Analyze
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
             </Modal>
             <a className="secondary-cta" href="#intel">
               VIEW SAMPLE REPORT
