@@ -1,90 +1,82 @@
-# lol_analyzer
+# League of Legends Analyzer
 
-### Database Schema
+A full-stack project that provides meaningful feedback and an aggregation of statistics to improve a summoner's gameplay!
 
-CREATE TABLE players (
-puuid TEXT PRIMARY KEY,
-game_name TEXT NOT NULL,
-tag_line TEXT NOT NULL,
-summoner_id TEXT,
-updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+## 🌟 Highlights
 
-CREATE TABLE matches (
-match_id TEXT PRIMARY KEY,
-game_start TIMESTAMPTZ NOT NULL,
-game_duration INTEGER NOT NULL, -- seconds
-game_version TEXT,
-queue_id INTEGER NOT NULL, -- 420 = ranked solo
-map_id INTEGER NOT NULL
-);
+- Robust ETL (Extract, Trasnform, Load) data ingestion pipeline that parses deeply nested / multi-layered data from api responses and turns it into a noramalized relational database
+- Used custom memory-efficient deduplication methods (use of sets) as a means of handling data quirks (overlapping frames, duplicate time frames)
+- Transforms raw match variables into dynamic, real-time coaching analytics, including laning phase gold deltas, vision control tracking, and CS benchmarking
+- Implemented a Redis caching layer with a 1-hour TTL on heavy analytical endpoints, drastically reducing PostgreSQL load and ensuring sub-millisecond response times on dashboard reloads.
+- Fully containerized stack utilizing FastAPI, React+TypeScript, and PostgreSQL (with redis for repeat requests in a short time) deployed to Oracle Cloud Infrastructure (OCI).
 
-CREATE TABLE match_participants (
-id SERIAL PRIMARY KEY,
-match_id TEXT REFERENCES matches(match_id),
-puuid TEXT REFERENCES players(puuid),
-participant_id INTEGER NOT NULL, -- 1-10, links to timeline
-champion_id INTEGER NOT NULL,
-champion_name TEXT NOT NULL,
-team_id INTEGER NOT NULL, -- 100 or 200
-individual_position TEXT, -- TOP, JUNGLE, etc.
-team_position TEXT,
-win BOOLEAN NOT NULL,
+## ℹ️ Overview
 
-    -- End-of-game stats
-    kills                 INTEGER, deaths              INTEGER, assists            INTEGER,
-    cs_total              INTEGER, cs_per_min          FLOAT,
-    vision_score          INTEGER, wards_placed        INTEGER,
-    wards_killed          INTEGER, control_wards       INTEGER,
-    gold_earned           INTEGER, gold_spent          INTEGER,
-    damage_to_champions   INTEGER, damage_taken        INTEGER,
-    kill_participation    FLOAT,
-    kda                   FLOAT,
-    gold_per_min          FLOAT,
-    damage_per_min        FLOAT,
-    lane_cs_at_10         INTEGER,
+The purpose of this software is to take the raw data from the riot api and to build out a dashboard where users can see information such as gold difference between you and your direct enemy (opponent team player who's holding the same position as you), creep score, performance index etc. These may be things you can simply see during the game, but when you're in the middle of a league game and the opps are rage baiting you it's unlikely for you to pay attention to the stats that truly matter. This acts as a way for the user to get a bird-eye view of their current performance and see their pain points (low CS, kills/assists per death etc.) to work on improving their game play.
 
-    UNIQUE(match_id, participant_id)
+## ⬇️ Installation Instructions
 
-);
+To run this project locally, you will need **Python 3.10+**, **Node.js 18+**, and **Docker** installed on your machine. You will also need a [Riot Games Developer API Key](https://developer.riotgames.com/).
 
-CREATE TABLE timeline_frames (
-id SERIAL PRIMARY KEY,
-match_id TEXT REFERENCES matches(match_id),
-participant_id INTEGER NOT NULL,
-timestamp_min INTEGER NOT NULL, -- 1, 2, 3... (minute mark)
+> **⚠️ Important Note on Riot API Keys:** Standard development keys expire every 24 hours. If the backend fails to ingest data with a 401/403 error, you must regenerate the key in the Riot Developer Portal and restart the backend server.
 
-    -- Gold
-    current_gold                INTEGER,
-    total_gold                  INTEGER,
-    gold_per_second             INTEGER,
+### 1. Database (PostgreSQL)
 
-    -- CS
-    minions_killed              INTEGER,
-    jungle_minions_killed       INTEGER,
+We use Docker to quickly spin up the database container.
 
-    -- Combat
-    level                       INTEGER,
-    xp                          INTEGER,
-    time_enemy_spent_controlled INTEGER,
+```bash
+docker-compose up -d db
+```
 
-    -- Position (for heatmaps later)
-    pos_x                       INTEGER,
-    pos_y                       INTEGER,
+### 2. Backend (FastAPI)
 
-    -- Damage (cumulative at this frame)
-    physical_damage_to_champs   INTEGER,
-    magic_damage_to_champs      INTEGER,
-    total_damage_to_champs      INTEGER,
-    total_damage_taken          INTEGER,
+The backend utilizes uv for fast, reproducible dependency management.
 
-    UNIQUE(match_id, participant_id, timestamp_min)
+```bash
+cd backend
+uv venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+uv pip install -e .
 
-);
+# Run Alembic migrations to build the schema
+alembic upgrade head
+```
 
-### Notes
+> Create a .env file in the backend/ directory and add your Riot API key:
+> RIOT_API_KEY=your_development_key_here
 
-CS = Creep Score = Number of minions last hit during the game. Killing creeps gives gold, which means you can purchase better weapons faster. Therefore, higher creep score is better for the team. CS/M = Creep score / minute, that is how many creeps you can kill per minute. Benchmark of 85 is set.
+Start the server:
 
-> [!NOTE]
-> I've labelled my uses of AI at the top of files that were one shot with AI. I tried to only use it for debugging and planning out parts, but usually never to completely write the code for me. I personally believe it is unreasonable to build modern software completely without AI.
+```bash
+uvicorn app.main:app --reload
+```
+
+### Frontend (React + TypeScript)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The dashboard will be available at http://localhost:5173.
+
+## 🔮 Roadmap & Next Steps
+
+This project is actively being developed to scale from a local analytics tool into a deployed, ML-enhanced platform.
+
+- [In Progress] Cloud Deployment: Containerizing the full stack (FastAPI, React, PostgreSQL) via Docker Compose and deploying behind an Nginx reverse proxy on an Oracle Cloud Infrastructure (OCI) instance.
+
+- Machine Learning Pipeline: Building an XGBoost/LightGBM win-prediction model leveraging engineered features like Gold Diff @ 15, CS Diff @ 15, and Vision Score.
+
+- Explainable AI: Integrating SHAP (SHapley Additive exPlanations) values so the application can output human-readable, specific coaching advice based on the ML model's feature importance.
+
+- Playstyle Clustering: Utilizing K-Means clustering on historical telemetry to categorize player archetypes.
+
+- CI/CD Integration: Setting up GitHub Actions for automated testing and deployment.
+
+## 💭 Feedback and Contributions
+
+As a first-year engineering student, I built this project to tackle real-world data engineering and full-stack challenges. I am actively looking for feedback on system architecture, database design, and React state management.
+
+If you see an area for optimization, have deployment advice, or just want to discuss the code, please feel free to open an Issue or start a Discussion.

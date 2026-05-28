@@ -55,7 +55,7 @@ def get_gold_diff_analysis(puuid : str, match_id : str, db : Session):
         e_frame = enemy_frame_map.get(minute)
         
         if e_frame:
-            timeline_data.append({"timestamp_min": minute, "player_gold": p_frame.current_gold, "enemy_gold": e_frame.current_gold, "gold_diff": p_frame.total_gold - e_frame.total_gold})
+            timeline_data.append({"timestamp_min": minute, "player_gold": p_frame.total_gold, "enemy_gold": e_frame.total_gold, "gold_diff": p_frame.total_gold - e_frame.total_gold})
     key_minutes = {5, 10, 15}
     laning_phase = {
         entry["timestamp_min"]: entry["gold_diff"]
