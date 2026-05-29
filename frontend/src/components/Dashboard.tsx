@@ -158,7 +158,6 @@ function DashboardStatus({
   state,
   gameName,
   tagLine,
-  region,
   message,
 }: {
   state: "loading" | "error";
