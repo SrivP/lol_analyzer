@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
+import { Spinner } from "@heroui/react";
 
 type MatchRow = {
   win?: boolean;
@@ -175,9 +176,16 @@ function DashboardStatus({
         <div className="dashboard-state-panel">
           <header className="dashboard-state-header">
             <div>
-              <p className={isError ? "eyebrow eyebrow-danger" : "eyebrow"}>
-                {isError ? "Request failed" : "Fetching match data"}
-              </p>
+              <div className="dashboard-state-loading-header">
+                <Spinner
+                  color="current"
+                  size="sm"
+                  className="dashboard-state-spinner"
+                />
+                <p className={isError ? "eyebrow eyebrow-danger" : "eyebrow"}>
+                  {isError ? "Request failed" : "Fetching match data"}
+                </p>
+              </div>
               <h1 className="dashboard-state-title">
                 {isError
                   ? "Could not build the report."
@@ -575,6 +583,33 @@ function DashboardStyles() {
         color: #8b8b8b;
         font-size: 11px;
         text-transform: uppercase;
+      }
+
+      .dashboard-state-loading-header {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0px;
+        color: #eaeaea;
+      }
+
+      .dashboard-state-loading-header .eyebrow {
+        margin: 0;
+        line-height: 1;
+      }
+
+      .dashboard-state-spinner {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1rem;
+        height: 1rem;
+        min-width: 1rem;
+        min-height: 1rem;
+      }
+
+      .dashboard-state-spinner svg {
+        display: block;
       }
 
       .eyebrow-danger {
