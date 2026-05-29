@@ -1,11 +1,7 @@
-{
-  /* This page was generated using AI, althought edits and tweaks were made by me, mostly on the routing logic */
-}
-
 import { Modal } from "@heroui/react";
 import { Button } from "@heroui/react";
 import { Swords } from "lucide-react";
-import { Form } from "react-router-dom";
+import { Form, useNavigate } from "react-router-dom";
 import { useActionData } from "react-router";
 
 const telemetryRows = [
@@ -17,6 +13,25 @@ const telemetryRows = [
 
 function Hero() {
   const actionData = useActionData();
+  const navigate = useNavigate();
+
+  function handleSubmit(e: any) {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const fd = new FormData(form);
+    const gameName = (fd.get("gameName") as string | null)?.trim();
+    const tagLine = (fd.get("tagLine") as string | null)?.trim();
+    const region = (fd.get("region") as string | null)?.trim() || "americas";
+
+    if (!gameName || !tagLine) return;
+
+    const safeRegion = encodeURIComponent(region);
+    const safeGameName = encodeURIComponent(gameName);
+    const safeTagLine = encodeURIComponent(tagLine);
+
+    navigate(`/${safeRegion}/${safeGameName}/${safeTagLine}`);
+  }
+
   return (
     <main className="app-shell">
       <section className="hero-grid" aria-labelledby="hero-title">
@@ -69,7 +84,7 @@ function Hero() {
                       </div>
                     </Modal.Header>
 
-                    <Form method="post">
+                    <Form method="post" onSubmit={handleSubmit}>
                       <Modal.Body className="analysis-modal-body">
                         <p>
                           Enter the player credentials to pull live match data
@@ -88,6 +103,19 @@ function Hero() {
                           <label className="analysis-field analysis-field-tag">
                             <span>Tag</span>
                             <input name="tagLine" placeholder="NA1" required />
+                          </label>
+                          <label className="analysis-field analysis-field-region">
+                            <span>Region</span>
+                            <select
+                              name="region"
+                              defaultValue="americas"
+                              required
+                            >
+                              <option value="americas">americas</option>
+                              <option value="asia">asia</option>
+                              <option value="europe">europe</option>
+                              <option value="sea">sea</option>
+                            </select>
                           </label>
                         </div>
 
@@ -134,9 +162,6 @@ function Hero() {
                 </Modal.Container>
               </Modal.Backdrop>
             </Modal>
-            <a className="secondary-cta" href="#intel">
-              VIEW SAMPLE REPORT
-            </a>
           </div>
         </div>
 

@@ -245,7 +245,7 @@ h1 {
   gap: 1px;
   padding: 0;
   border-bottom: 1px solid #353535;
-  background: #353535;
+  background: #0a0a0a;
 }
 
 .analysis-modal-header > * {
@@ -306,7 +306,7 @@ h1 {
 
 .analysis-form-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(96px, 0.34fr);
+  grid-template-columns: minmax(0, 1fr) minmax(96px, 0.34fr) minmax(132px, 0.46fr);
   gap: 1px;
   background: #353535;
   border-bottom: 1px solid #353535;
@@ -319,12 +319,28 @@ h1 {
   background: #0a0a0a;
 }
 
+.analysis-field-region {
+  position: relative;
+}
+
+.analysis-field-region::after {
+  content: "V";
+  position: absolute;
+  right: 26px;
+  bottom: 27px;
+  color: #ff2a2a;
+  font-family: "JetBrains Mono", "IBM Plex Mono", "Courier New", monospace;
+  font-size: 0.72rem;
+  pointer-events: none;
+}
+
 .analysis-field span {
   color: #858585;
   font-size: 0.68rem;
 }
 
-.analysis-field input {
+.analysis-field input,
+.analysis-field select {
   width: 100%;
   height: 44px;
   border: 1px solid #353535;
@@ -338,11 +354,24 @@ h1 {
   text-transform: uppercase;
 }
 
+.analysis-field select {
+  appearance: none;
+  background: #111;
+  cursor: pointer;
+  padding-right: 30px;
+}
+
+.analysis-field select option {
+  background: #0a0a0a;
+  color: #eaeaea;
+}
+
 .analysis-field input::placeholder {
   color: #5f5f5f;
 }
 
-.analysis-field input:focus {
+.analysis-field input:focus,
+.analysis-field select:focus {
   border-color: #ff2a2a;
   outline: 1px solid #ff2a2a;
   outline-offset: 0;
@@ -380,11 +409,14 @@ h1 {
 
 .analysis-modal-footer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  gap: 5px;
   padding: 0;
   border-top: 1px solid #353535;
-  background: #353535;
+  background: #0a0a0a;
+  padding-top: 5px;
 }
 
 .analysis-modal-button {
@@ -657,6 +689,10 @@ h1 {
 
   .command-row {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-form-grid {
     grid-template-columns: 1fr;
   }
 

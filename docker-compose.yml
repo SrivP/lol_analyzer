@@ -1,6 +1,7 @@
 # this was ai generated
 
 services:
+  # 1. Your existing Database
   postgres:
     image: postgres:16
     container_name: league-coach-db
@@ -14,11 +15,42 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 2. Your existing Redis Cache
   redis-cache:
     image: redis:7-alpine
     container_name: league-coach-redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+
+  # 3. The FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+    container_name: league-coach-backend
+    env_file:
+      - .env
+    environment:
+      # These URLs now point dynamically to your 'postgres' and 'redis-cache' service names above
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      - REDIS_URL=redis://redis-cache:6379/0
+      - RIOT_API_KEY=${RIOT_API_KEY}
+    depends_on:
+      - postgres
+      - redis-cache
+    restart: unless-stopped
+
+  # 4. The React Frontend
+  frontend:
+    build:
+      context: ./frontend
+    container_name: league-coach-frontend
+    ports:
+      - "80:80" # Maps local port 80 to Nginx inside the container
+    depends_on:
+      - backend
     restart: unless-stopped
 
 volumes:

@@ -1,5 +1,6 @@
 import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import { NavLink } from "react-router";
 
 type MatchRow = {
   win?: boolean;
@@ -64,22 +65,28 @@ type DashboardPayload = {
   };
 };
 
-const fetchPlayerDashboard = async ({ queryKey }) => {
-  const [_key, gameName, tagLine] = queryKey;
+const fetchPlayerDashboard = async ({ queryKey }: any) => {
+  const [_key, gameName, tagLine, region] = queryKey;
 
-  if (!gameName || !tagLine) {
+  if (!gameName || !tagLine || !region) {
     throw new Error("Missing Riot account name or tag.");
   }
 
-  const response = await fetch(`http://127.0.0.1:8000/${gameName}/${tagLine}`);
+  // 1. Add the /api/ prefix so Nginx routes it to the backend container
+  const response = await fetch(`/api/${region}/${gameName}/${tagLine}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch player data. They might not exist.");
   }
 
-  return (await response.json()) as DashboardPayload;
-};
+  // 2. Parse the JSON exactly ONE time
+  const data = await response.json();
 
+  console.log(`Received dashboard payload for ${gameName}#${tagLine}:`, data);
+
+  // 3. Return the saved data
+  return data as DashboardPayload;
+};
 const statusRows = ["Account lookup", "Match history", "Ranked telemetry"];
 
 function asDisplayValue(value: unknown, fallback = "--") {
@@ -151,11 +158,13 @@ function DashboardStatus({
   state,
   gameName,
   tagLine,
+  region,
   message,
 }: {
   state: "loading" | "error";
   gameName?: string;
   tagLine?: string;
+  region?: string;
   message?: string;
 }) {
   const isError = state === "error";
@@ -221,7 +230,7 @@ function DashboardStatus({
                   : "Contacting the local analyzer and preparing the dashboard rows. This usually takes a moment when the match sample is cold."}
               </p>
               <a className="dashboard-state-action" href="/">
-                {isError ? "Back to search" : "Search another player"}
+                {isError ? "Back to search" : "Return to player search"}
               </a>
             </aside>
           </div>
@@ -232,18 +241,23 @@ function DashboardStatus({
 }
 
 function Dashboard() {
-  const { gameName, tagLine } = useParams();
+  const { gameName, tagLine, region } = useParams();
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["playerStats", gameName, tagLine],
+    queryKey: ["playerStats", gameName, tagLine, region],
     queryFn: fetchPlayerDashboard,
-    enabled: !!gameName && !!tagLine,
+    enabled: !!gameName && !!tagLine && !!region,
     placeholderData: (previousData) => previousData,
   });
 
   if (isLoading) {
     return (
-      <DashboardStatus state="loading" gameName={gameName} tagLine={tagLine} />
+      <DashboardStatus
+        state="loading"
+        gameName={gameName}
+        tagLine={tagLine}
+        region={region}
+      />
     );
   }
 
@@ -311,19 +325,14 @@ function Dashboard() {
             </h1>
           </div>
 
-          <div className="header-meta" aria-label="Dashboard metadata">
-            <div className="meta">
-              <span>Region</span>
-              <strong>{data?.region ?? "NA"}</strong>
-            </div>
-            <div className="meta">
-              <span>Queue</span>
-              <strong>{data?.queueType ?? "Ranked Solo"}</strong>
-            </div>
-            <div className="meta">
-              <span>Sample</span>
-              <strong>{matches?.length ?? 0} games</strong>
-            </div>
+          <div className="header-actions">
+            <NavLink
+              className="dashboard-state-action dashboard-state-action-header"
+              to="/"
+              end
+            >
+              Return to player search{" "}
+            </NavLink>
           </div>
         </header>
 
@@ -480,6 +489,21 @@ function Dashboard() {
                 );
               })}
             </div>
+
+            <div className="header-meta" aria-label="Dashboard metadata">
+              <div className="meta">
+                <span>Region</span>
+                <strong>{data?.region ?? "NA"}</strong>
+              </div>
+              <div className="meta">
+                <span>Queue</span>
+                <strong>{data?.queueType ?? "Ranked Solo"}</strong>
+              </div>
+              <div className="meta">
+                <span>Sample</span>
+                <strong>{matches?.length ?? 0} games</strong>
+              </div>
+            </div>
           </aside>
         </div>
       </section>
@@ -514,6 +538,20 @@ function DashboardStyles() {
         gap: 24px;
         padding: 30px 32px 28px;
         border-bottom: 1px solid #2a2a2a;
+      }
+
+      .dashboard-header {
+        align-items: start;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: end;
+        justify-content: flex-end;
+      }
+
+      .dashboard-state-action-header {
+        margin: 0;
       }
 
       .eyebrow,
@@ -563,14 +601,17 @@ function DashboardStyles() {
         min-width: 230px;
         color: #8b8b8b;
         font-size: 12px;
+        
       }
 
       .meta {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         gap: 18px;
         padding-bottom: 8px;
         border-bottom: 1px solid #2a2a2a;
+        padding: 4px 20px;
       }
 
       .meta strong {
@@ -919,19 +960,28 @@ function DashboardStyles() {
 
       .dashboard-state-action {
         display: inline-flex;
-        min-height: 46px;
+        min-height: 52px;
         align-items: center;
         justify-content: center;
         margin: 24px;
-        padding: 0 18px;
-        border: 1px solid #2a2a2a;
+        padding: 0 24px;
+        border: 1px solid #eaeaea;
         border-radius: 0;
-        background: #151515;
+        background: #111;
         color: #eaeaea;
         text-decoration: none;
         text-transform: uppercase;
-        font-size: 11px;
-        font-weight: 700;
+        letter-spacing: 0;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .dashboard-state-action:hover,
+      .dashboard-state-action:focus-visible {
+        background: #ff2a2a;
+        color: #0a0a0a;
+        outline: none;
       }
 
       @media (max-width: 1050px) {

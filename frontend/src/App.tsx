@@ -35,7 +35,7 @@ const router = createBrowserRouter([
       },
       {
         // The colon (:) tells the router these are dynamic variables
-        path: "dashboard/:gameName/:tagLine",
+        path: ":region/:gameName/:tagLine",
         element: <Dashboard />,
       },
     ],
@@ -48,19 +48,21 @@ export async function heroAction({ request }: { request: Request }) {
   const formData = await request.formData();
   const gameName = formData.get("gameName");
   const tagLine = formData.get("tagLine");
+  const region = formData.get("region");
 
-  if (!gameName || !tagLine) {
-    return { error: "Both game name and tag line are required." };
+  if (!gameName || !tagLine || !region) {
+    return { error: "Region, game name, and tag line are required." };
   }
 
   const gameNameStr = String(gameName).trim();
   const tagLineStr = String(tagLine).trim();
+  const regionStr = String(region).trim() || "americas";
 
-  // personal note: used to ensure spaces and things like that don't mess with the url
+  const safeRegion = encodeURIComponent(regionStr);
   const safeGameName = encodeURIComponent(gameNameStr);
   const safeTagLine = encodeURIComponent(tagLineStr);
 
-  return redirect(`/dashboard/${safeGameName}/${safeTagLine}`);
+  return redirect(`/${safeRegion}/${safeGameName}/${safeTagLine}`);
 }
 
 function App() {

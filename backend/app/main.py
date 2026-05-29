@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware #type:ignore
 
 app = FastAPI()
 redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
-puuid = get_puuid("vulcan", "ak47")
+puuid = get_puuid("vulcan", "ak47", "americas")
 
 
 origins =[
@@ -28,11 +28,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/{gameName}/{tagName}")
-def read_root(gameName : str, tagName : str, db = Depends(get_db)):
-    player_puuid = get_puuid(game_name=gameName, tag_name=tagName)
-    match_history = get_match_history(puuid=player_puuid)
-    bulk_ingest(player_puuid)
+@app.get("/{region}/{gameName}/{tagName}")
+def read_root(region: str, gameName: str, tagName: str, db = Depends(get_db)):
+    player_puuid = get_puuid(game_name=gameName, tag_name=tagName, region=region)
+    match_history = get_match_history(puuid=player_puuid, region=region)
+    bulk_ingest(player_puuid, region=region)
 
     # Caching logic for CS analysis
     cache_key = f"cs_analysis:{player_puuid}"
@@ -96,11 +96,11 @@ def read_root(gameName : str, tagName : str, db = Depends(get_db)):
 
 @app.get("/matches")
 def matches():
-    return get_match_history(puuid=puuid)
+    return get_match_history(puuid=puuid, region="americas")
 
 @app.post('/ingest/player/{game_name}/{tag_name}')
 def ingest_last_10_matches(game_name: str, tag_name : str):
-    bulk_ingest(puuid=puuid)
+    bulk_ingest(puuid=puuid, region="americas")
     return {"status": "ok"}
 
 
