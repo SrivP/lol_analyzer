@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware #type:ignore
 
 app = FastAPI()
 redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
-puuid = get_puuid("vulcan", "ak47", "americas")
+
 
 
 origins =[
@@ -94,14 +94,14 @@ def read_root(region: str, gameName: str, tagName: str, db = Depends(get_db)):
 
     
 
-@app.get("/matches")
-def matches():
-    return get_match_history(puuid=puuid, region="americas")
+# @app.get("/matches")
+# def matches():
+#     return get_match_history(puuid=puuid, region="americas")
 
-@app.post('/ingest/player/{game_name}/{tag_name}')
-def ingest_last_10_matches(game_name: str, tag_name : str):
-    bulk_ingest(puuid=puuid, region="americas")
-    return {"status": "ok"}
+# @app.post('/ingest/player/{game_name}/{tag_name}')
+# def ingest_last_10_matches(game_name: str, tag_name : str):
+#     bulk_ingest(puuid=puuid, region="americas")
+#     return {"status": "ok"}
 
 
 @app.post('/ingest/{match_id}')
