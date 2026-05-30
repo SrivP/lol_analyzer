@@ -47,8 +47,6 @@ services:
     build:
       context: ./frontend
     container_name: league-coach-frontend
-    ports:
-      - "80:80" # Maps local port 80 to Nginx inside the container
     depends_on:
       - backend
     restart: unless-stopped
