@@ -3,7 +3,7 @@ from dotenv import load_dotenv, find_dotenv # pyright: ignore[reportMissingImpor
 import os
 from sqlalchemy import engine_from_config #type:ignore
 from sqlalchemy import pool # type:ignore
-from app.models import base, players, match, match_participant, timeline_frame
+from app.models import base, match, match_participant, timeline_frame
 from app.models.base import Base
 
 from alembic import context # type:ignore
